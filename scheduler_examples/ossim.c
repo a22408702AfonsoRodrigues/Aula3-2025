@@ -296,6 +296,7 @@ int main(int argc, char *argv[]) {
             case SCHED_FIFO:
                 fifo_scheduler(current_time_ms, &ready_queue, &CPU);
                 break;
+            case SCHED_SJF:
             default:
                 printf("Unknown scheduler type\n");
                 break;
