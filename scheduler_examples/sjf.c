@@ -54,7 +54,7 @@ void sjf_scheduler(uint32_t current_time_ms, queue_t *rq, pcb_t **cpu_task) {
             uint32_t remaining = (p->time_ms > p->ellapsed_time_ms)
                                  ? (p->time_ms - p->ellapsed_time_ms)
                                  : 0;
-//tes
+//tesf
             if (best_elem == NULL || remaining < best_remaining) {
                 best_elem = it;
                 best_remaining = remaining;
