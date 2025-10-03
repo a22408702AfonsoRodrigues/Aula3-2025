@@ -1,10 +1,4 @@
-/usr/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "Unix Makefiles" -S /home/aluno/Aula3/scheduler_examples -B /home/aluno/Aula3/scheduler_examples/cmake-build-debug
--- The C compiler identification is GNU 12.2.0
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - done
--- Check for working C compiler: /usr/bin/cc - skipped
--- Detecting C compile features
--- Detecting C compile features - done
+/usr/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "Unix Makefiles" -S /home/aluno/tmp/Aula3-2025/scheduler_examples -B /home/aluno/tmp/Aula3-2025/scheduler_examples/cmake-build-debug
 -- Configuring done
 -- Generating done
--- Build files have been written to: /home/aluno/Aula3/scheduler_examples/cmake-build-debug
+-- Build files have been written to: /home/aluno/tmp/Aula3-2025/scheduler_examples/cmake-build-debug
