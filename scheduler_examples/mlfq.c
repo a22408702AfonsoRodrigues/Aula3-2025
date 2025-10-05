@@ -9,10 +9,8 @@
 
 #define MLFQ_QUANTUM_MS 500
 
-// 3 níveis de prioridade: 0 = mais alta
 static queue_t q0 = {0}, q1 = {0}, q2 = {0};
 
-// Nível da tarefa atualmente no CPU (0,1,2)
 static int running_level = 0;
 
 static inline int queues_nonempty(void) {
@@ -39,31 +37,17 @@ static inline void requeue_demoted(pcb_t *p, int from_level) {
     } else if (from_level == 1) {
         enqueue_pcb(&q2, p);
     } else {
-        // já está no nível mais baixo, volta para Q2
         enqueue_pcb(&q2, p);
     }
 }
 
-/**
- * @brief Multi-Level Feedback Queue (MLFQ) scheduler (preemptivo).
- *
- * Regras:
- *  - Novas tarefas: entram em Q0.
- *  - Seleção: Q0 > Q1 > Q2 (a primeira não vazia).
- *  - Quantum: 500 ms por nível (idêntico em todos, conforme enunciado).
- *  - Esgotou quantum sem terminar:
- *       * se há alguém à espera em qualquer fila -> preempção e despromoção.
- *       * se ninguém à espera -> continua e renova slice_start_ms (sem despromoção).
- */
+
 void mlfq_scheduler(uint32_t current_time_ms, queue_t *rq, pcb_t **cpu_task) {
-    // 1) Mover novas chegadas (de rq) para Q0
     drain_new_arrivals_into_q0(rq);
 
-    // 2) Atualizar tarefa no CPU (se existir)
     if (*cpu_task) {
         (*cpu_task)->ellapsed_time_ms += TICKS_MS;
 
-        // Terminou?
         if ((*cpu_task)->ellapsed_time_ms >= (*cpu_task)->time_ms) {
             msg_t msg = (msg_t){
                 .pid = (*cpu_task)->pid,
@@ -74,31 +58,27 @@ void mlfq_scheduler(uint32_t current_time_ms, queue_t *rq, pcb_t **cpu_task) {
                 perror("write");
             }
             free(*cpu_task);
-            *cpu_task = NULL; // CPU livre
+            *cpu_task = NULL;
         } else {
-            // Verifica quantum
             uint32_t slice_elapsed = current_time_ms - (*cpu_task)->slice_start_ms;
             if (slice_elapsed >= MLFQ_QUANTUM_MS) {
-                // Só preempta se houver alguém à espera (em qualquer fila)
                 if (queues_nonempty()) {
                     pcb_t *to_demote = *cpu_task;
                     *cpu_task = NULL;
                     requeue_demoted(to_demote, running_level);
                 } else {
-                    // Ninguém à espera: continua a correr (renova o time-slice)
                     (*cpu_task)->slice_start_ms = current_time_ms;
                 }
             }
         }
     }
 
-    // 3) Se CPU está livre, escolher próximo de maior prioridade
     if (*cpu_task == NULL) {
         pcb_t *next = get_next_from_queues(&running_level);
         if (next) {
             *cpu_task = next;
             (*cpu_task)->status = TASK_RUNNING;
-            (*cpu_task)->slice_start_ms = current_time_ms; // inicia novo slice
+            (*cpu_task)->slice_start_ms = current_time_ms;
         }
     }
 }
